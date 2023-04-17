@@ -91,7 +91,6 @@ impl Strategy for SABeatDetector {
         // I don't know what the value really means :D
         // figured out by testing.. :/
         if spectrum.max().1.val() > 6_000.0 {
-            println!("spectrum.max().1.val(): {:?}", spectrum.max().1.val());
             // mark we found a beat
             self.state.update_last_discovered_beat_timestamp();
             Some(BeatInfo::new(self.state.beat_time_ms()))
