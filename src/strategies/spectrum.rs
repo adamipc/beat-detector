@@ -24,10 +24,10 @@ SOFTWARE.
 use crate::strategies::window_stats::WindowStats;
 use crate::strategies::AnalysisState;
 use crate::{BeatInfo, Strategy, StrategyKind};
-use spectrum_analyzer::FrequencyLimit;
-use ringbuffer::{ConstGenericRingBuffer, RingBufferWrite, RingBufferExt};
-use std::cell::RefCell;
+use ringbuffer::{ConstGenericRingBuffer, RingBufferExt, RingBufferWrite};
 use spectrum_analyzer::scaling::divide_by_N;
+use spectrum_analyzer::FrequencyLimit;
+use std::cell::RefCell;
 
 /// Struct to provide a beat-detection strategy using a
 /// Spectrum Analysis. The algorithm is pretty basic/stupid.
@@ -85,11 +85,13 @@ impl Strategy for SABeatDetector {
             FrequencyLimit::Max(90.0),
             // None,
             Some(&divide_by_N),
-        ).unwrap();
+        )
+        .unwrap();
 
         // I don't know what the value really means :D
         // figured out by testing.. :/
-        if spectrum.max().1.val() > 2_100_000.0 {
+        if spectrum.max().1.val() > 6_000.0 {
+            println!("spectrum.max().1.val(): {:?}", spectrum.max().1.val());
             // mark we found a beat
             self.state.update_last_discovered_beat_timestamp();
             Some(BeatInfo::new(self.state.beat_time_ms()))
@@ -127,7 +129,7 @@ impl Strategy for SABeatDetector {
     where
         Self: Sized,
     {
-        400
+        700
     }
 }
 
@@ -135,5 +137,4 @@ impl Strategy for SABeatDetector {
 mod tests {
 
     // use super::*;
-
 }

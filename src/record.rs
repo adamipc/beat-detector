@@ -37,7 +37,7 @@ use std::time::Instant;
 /// on the audio. On each recognized beat, the specified callback
 /// is executed. It does so by starting a new thread.
 pub fn start_listening(
-    on_beat_cb: impl Fn(BeatInfo) + Send + 'static,
+    mut on_beat_cb: impl FnMut(BeatInfo) + Send + 'static,
     input_dev: Option<Device>,
     strategy: StrategyKind,
     keep_recording: Arc<AtomicBool>,
@@ -71,18 +71,20 @@ pub fn start_listening(
     let preferred_window_length = 1024;
 
     let in_stream_cfg = StreamConfig {
-        channels: 1,
+        channels: cpal::ChannelCount::from(2u16),
         sample_rate: sampling_rate,
-        #[cfg(not(target_os = "linux"))]
-        buffer_size: BufferSize::Fixed(preferred_window_length),
+        //#[cfg(not(target_os = "linux"))]
+        //buffer_size: BufferSize::Fixed(preferred_window_length),
         // on Raspberry Pi I can't set a fixed size, there are
         // "Illegal Argument" errors from ALSA; it works
         // on Mac and Windows tho
-        #[cfg(target_os = "linux")]
+        //#[cfg(target_os = "linux")]
         buffer_size: BufferSize::Default,
     };
 
     let detector = strategy.detector(sampling_rate.0);
+
+    println!("{:?}", in_stream_cfg);
 
     let handle = spawn(move || {
         // abstraction over possible return types
@@ -101,6 +103,7 @@ pub fn start_listening(
                     }
                 },
                 err_cb,
+                None,
             ),
             SampleFormat::I16 => in_dev.build_input_stream(
                 &in_stream_cfg,
@@ -115,6 +118,7 @@ pub fn start_listening(
                     }
                 },
                 err_cb,
+                None,
             ),
             SampleFormat::U16 => in_dev.build_input_stream(
                 &in_stream_cfg,
@@ -129,7 +133,9 @@ pub fn start_listening(
                     }
                 },
                 err_cb,
+                None,
             ),
+            _ => todo!(),
         }
         .map_err(|err| format!("Can't open stream: {:?}", err))
         .unwrap();

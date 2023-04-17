@@ -18,8 +18,8 @@ documentation = "https://docs.rs/beat-detector"
 [dependencies]
 lowpass-filter = "0.2.4"
 spectrum-analyzer = "1.1.0"
-cpal = "0.13.3"
-ringbuffer = "0.7.1"
+cpal = { git = "https://github.com/RustAudio/cpal.git", features = ["asio"] }
+ringbuffer = "0.8.1"
 
 [dev-dependencies]
 minimp3 = "0.5.1"
