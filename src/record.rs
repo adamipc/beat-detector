@@ -71,14 +71,14 @@ pub fn start_listening(
     let preferred_window_length = 1024;
 
     let in_stream_cfg = StreamConfig {
-        channels: cpal::ChannelCount::from(2u16),
+        channels: cpal::ChannelCount::from(1u16),
         sample_rate: sampling_rate,
-        //#[cfg(not(target_os = "linux"))]
-        //buffer_size: BufferSize::Fixed(preferred_window_length),
+        #[cfg(not(target_os = "linux"))]
+        buffer_size: BufferSize::Fixed(preferred_window_length),
         // on Raspberry Pi I can't set a fixed size, there are
         // "Illegal Argument" errors from ALSA; it works
         // on Mac and Windows tho
-        //#[cfg(target_os = "linux")]
+        #[cfg(target_os = "linux")]
         buffer_size: BufferSize::Default,
     };
 

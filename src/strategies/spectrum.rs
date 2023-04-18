@@ -38,15 +38,15 @@ use std::cell::RefCell;
 pub struct SABeatDetector {
     state: AnalysisState,
     // ring buffer with latest audio; necessary because we don't
-    // necessarily get 1024 samples at each callback but mostly
+    // necessarily get 4096 samples at each callback but mostly
     // 500-540..
-    audio_data_buf: RefCell<ConstGenericRingBuffer<f32, 1024>>,
+    audio_data_buf: RefCell<ConstGenericRingBuffer<f32, 4096>>,
 }
 
 impl SABeatDetector {
     #[inline(always)]
     pub fn new(sampling_rate: u32) -> Self {
-        const LEN: usize = 1024;
+        const LEN: usize = 4096;
         let mut initial_buf = ConstGenericRingBuffer::<f32, LEN>::new();
         (0..LEN).for_each(|_| initial_buf.push(0.0));
         Self {
@@ -60,7 +60,7 @@ impl Strategy for SABeatDetector {
     /// Callback called when the audio input library got the next callback.
     #[inline(always)]
     fn is_beat(&self, callback_samples: &[i16]) -> Option<BeatInfo> {
-        // make sure we have the latest 1024 audio samples in the buffer
+        // make sure we have the latest 4096 audio samples in the buffer
         // => ready for FFT
         let mut audio_data_buf = self.audio_data_buf.borrow_mut();
         for sample in callback_samples {
