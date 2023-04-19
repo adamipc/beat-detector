@@ -57,6 +57,7 @@ pub fn start_listening(
     // let channels = in_dev_cfg.channels();
     let sampling_rate = in_dev_cfg.sample_rate();
     let sample_format = in_dev_cfg.sample_format();
+    let channel_count = in_dev_cfg.channels();
     eprintln!("Using input device: {:?}", in_dev.name().unwrap());
     // eprintln!("  channels: {}", channels);
     eprintln!("  sampling_rate: {}", sampling_rate.0);
@@ -71,7 +72,7 @@ pub fn start_listening(
     let preferred_window_length = 1024;
 
     let in_stream_cfg = StreamConfig {
-        channels: cpal::ChannelCount::from(1u16),
+        channels: channel_count,
         sample_rate: sampling_rate,
         #[cfg(not(target_os = "linux"))]
         buffer_size: BufferSize::Fixed(preferred_window_length),
