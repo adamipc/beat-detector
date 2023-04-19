@@ -152,10 +152,10 @@ impl StrategyKind {
     /// Creates a concrete detector object, i.e. a struct that implements
     /// [`Strategy`] on that you can continuously analyze your input audio data.
     #[inline(always)]
-    fn detector(&self, sampling_rate: u32) -> Box<dyn Strategy + Send> {
+    fn detector(&self, sampling_rate: u32, sensitivity: f32) -> Box<dyn Strategy + Send> {
         match self {
             StrategyKind::LPF => Box::new(LpfBeatDetector::new(sampling_rate)),
-            StrategyKind::Spectrum => Box::new(SABeatDetector::new(sampling_rate)),
+            StrategyKind::Spectrum => Box::new(SABeatDetector::new(sampling_rate, sensitivity)),
             // _ => panic!("Unknown Strategy"),
         }
     }
@@ -281,7 +281,7 @@ mod tests {
         let mut map = HashMap::new();
 
         for strategy in strategies {
-            let detector = strategy.detector(44100);
+            let detector = strategy.detector(44100, 6_000.0);
             let mut beats = Vec::new();
             for i in 0..window_count {
                 let window = &samples[i * window_length..(i + 1) * window_length];

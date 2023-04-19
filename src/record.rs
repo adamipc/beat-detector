@@ -40,6 +40,7 @@ pub fn start_listening(
     mut on_beat_cb: impl FnMut(BeatInfo) + Send + 'static,
     input_dev: Option<Device>,
     strategy: StrategyKind,
+    sensitivity: f32,
     keep_recording: Arc<AtomicBool>,
 ) -> Result<JoinHandle<()>, String> {
     if !keep_recording.load(Ordering::SeqCst) {
@@ -72,18 +73,18 @@ pub fn start_listening(
     let preferred_window_length = 1024;
 
     let in_stream_cfg = StreamConfig {
-        channels: channel_count,
+        channels: cpal::ChannelCount::from(2u16),
         sample_rate: sampling_rate,
-        #[cfg(not(target_os = "linux"))]
-        buffer_size: BufferSize::Fixed(preferred_window_length),
+        //#[cfg(not(target_os = "linux"))]
+        //buffer_size: BufferSize::Fixed(preferred_window_length),
         // on Raspberry Pi I can't set a fixed size, there are
         // "Illegal Argument" errors from ALSA; it works
         // on Mac and Windows tho
-        #[cfg(target_os = "linux")]
+        //#[cfg(target_os = "linux")]
         buffer_size: BufferSize::Default,
     };
 
-    let detector = strategy.detector(sampling_rate.0);
+    let detector = strategy.detector(sampling_rate.0, sensitivity);
 
     println!("{:?}", in_stream_cfg);
 

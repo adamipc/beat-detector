@@ -41,17 +41,19 @@ pub struct SABeatDetector {
     // necessarily get 4096 samples at each callback but mostly
     // 500-540..
     audio_data_buf: RefCell<ConstGenericRingBuffer<f32, 4096>>,
+    sensitivity: f32,
 }
 
 impl SABeatDetector {
     #[inline(always)]
-    pub fn new(sampling_rate: u32) -> Self {
+    pub fn new(sampling_rate: u32, sensitivity: f32) -> Self {
         const LEN: usize = 4096;
         let mut initial_buf = ConstGenericRingBuffer::<f32, LEN>::new();
         (0..LEN).for_each(|_| initial_buf.push(0.0));
         Self {
             state: AnalysisState::new(sampling_rate),
             audio_data_buf: RefCell::from(initial_buf),
+            sensitivity,
         }
     }
 }
@@ -90,7 +92,7 @@ impl Strategy for SABeatDetector {
 
         // I don't know what the value really means :D
         // figured out by testing.. :/
-        if spectrum.max().1.val() > 6_000.0 {
+        if spectrum.max().1.val() > self.sensitivity {
             // mark we found a beat
             self.state.update_last_discovered_beat_timestamp();
             Some(BeatInfo::new(self.state.beat_time_ms()))
